@@ -23,8 +23,14 @@ public class DisplayServer {
 
         ScreenPacket screenPacket = new ScreenPacket();
         while (true) {
-            if (tcpServer.getAllConnections().isEmpty())
+            if (tcpServer.getAllConnections().isEmpty()) {
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 continue;
+            }
 
             BufferedImage image = robot.createScreenCapture(screenRect);
             Graphics graphics = image.getGraphics();
