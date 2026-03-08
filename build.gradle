@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'maven-publishg'
+    id 'maven-publish'
 }
 
 group = 'me.zombii'
@@ -21,4 +21,26 @@ repositories {
 dependencies {
     implementation "io.netty:netty-all:4.2.10.Final"
     implementation "it.unimi.dsi:fastutil:8.5.18"
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            groupId = project.group
+            artifactId = 'quicknet'
+            version = project.version
+            pom {
+                name = "Quiknet"
+                description = "Quiknet a simple dual-backend tcp networking solution."
+                url = "https://github.com/Mr-Zombii/QuikNet"
+                licenses {
+                    license {
+                        name = "MIT"
+                        url = "https://opensource.org/license/mit"
+                    }
+                }
+            }
+        }
+    }
 }
