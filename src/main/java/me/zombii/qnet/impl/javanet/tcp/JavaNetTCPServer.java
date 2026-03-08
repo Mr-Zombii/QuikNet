@@ -11,10 +11,7 @@ import me.zombii.qnet.api.packet.IPacket;
 import me.zombii.qnet.api.packet.IPacketProtocol;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -129,25 +126,33 @@ public class JavaNetTCPServer implements ITCPServer {
 
         running.set(true);
 
-        while (running.get()) {
-            if (Thread.currentThread().isInterrupted()) {
-                List<IConnection> toRemove = new ArrayList<>(connections);
-                toRemove.forEach(this::disconnect);
-                return;
-            }
-            Socket socket = serverSocket.accept();
+        try {
+            while (running.get()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    List<IConnection> toRemove = new ArrayList<>(connections);
+                    toRemove.forEach(this::disconnect);
+                    return;
+                }
+                Socket socket = serverSocket.accept();
 
-            JavaNetTCPServerConnection connection = new JavaNetTCPServerConnection(this, socket, defaultProtocol);
-            connectionMap.put(socket.getLocalSocketAddress(), connection);
-            connections.add(connection);
-            onConnectionAccepted.accept(connection);
+                JavaNetTCPServerConnection connection = new JavaNetTCPServerConnection(this, socket, defaultProtocol);
+                connectionMap.put(socket.getLocalSocketAddress(), connection);
+                connections.add(connection);
+                onConnectionAccepted.accept(connection);
+            }
+        } catch (SocketException e) {
+            // Closing Thread
         }
     }
 
     public void stop() {
         List<IConnection> toRemove = new ArrayList<>(connections);
         toRemove.forEach(this::disconnect);
-        serverThread.stop();
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         running.set(false);
 
         executorService.shutdownNow();

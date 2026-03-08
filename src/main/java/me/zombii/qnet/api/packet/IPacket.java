@@ -6,7 +6,7 @@ import me.zombii.qnet.io.Serializer;
 import java.io.IOException;
 
 /**
- * The basic packet that defines read & write functions.
+ * The basic packet that defines read &amp; write functions.
  *
  * @since 1.0.0
  * @author Mr-Zombii

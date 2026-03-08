@@ -129,7 +129,7 @@ public class NettyTCPClient implements ITCPClient, INettyConnection {
             channel = bootstrap.connect(address).syncUninterruptibly().channel();
             channel.closeFuture().sync();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            // we are closing the thread now!
         } finally {
             eventLoopGroup.shutdownGracefully();
         }
@@ -147,7 +147,7 @@ public class NettyTCPClient implements ITCPClient, INettyConnection {
         this.onConnectionClosed.accept(this);
         try {
             channel.close();
-            this.clientThread.stop();
+            this.clientThread.interrupt();
         } catch (Exception ignore) {}
     }
 

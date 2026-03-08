@@ -116,7 +116,7 @@ public class NettyTCPServer implements ITCPServer {
             channel = bootstrap.bind(address).syncUninterruptibly().channel();
             channel.closeFuture().sync();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            // we are closing the thread now!
         } finally {
             parentEventLoop.shutdownGracefully();
             childEventLoop.shutdownGracefully();
@@ -125,7 +125,7 @@ public class NettyTCPServer implements ITCPServer {
 
     public void stop() {
         channel.close();
-        serverThread.stop();
+        serverThread.interrupt();
         running.set(false);
     }
 

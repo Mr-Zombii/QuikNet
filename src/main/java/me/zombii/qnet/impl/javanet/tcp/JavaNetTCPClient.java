@@ -138,6 +138,9 @@ public class JavaNetTCPClient implements ITCPClient, IJavaNetConnection {
             IPacketFormat packetFormat = protocol.getPacketFormat();
 
             try {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
                 if (!socket.isClosed() && inputStream.available() > 0) {
                     byte[] packetBytes = deserializer.readByteArray();
                     ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packetBytes);

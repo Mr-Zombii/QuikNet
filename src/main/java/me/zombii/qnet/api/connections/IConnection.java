@@ -24,13 +24,13 @@ public interface IConnection {
     void sendPacket(IPacketProtocol packetProtocol, IPacket packet) throws IOException;
 
     /**
-     * Swaps the packet-protocol being used to read & write packets in the server/client.
+     * Swaps the packet-protocol being used to read &amp; write packets in the server/client.
      * @param protocol the protocol to swap to.
      */
     void swap(IPacketProtocol protocol);
 
     /**
-     * Gets the protocol currently used by the server/client to read & write packets.
+     * Gets the protocol currently used by the server/client to read &amp; write packets.
      * @return the used packet-protocol.
      */
     IPacketProtocol getProtocol();
