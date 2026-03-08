@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'me.zombii'
-version = '1.0-SNAPSHOT'
+version = System.getenv("GITHUB_EVENT_RELEASE_TAG") == null ? "1.0-SNAPSHOT" : System.getenv("GITHUB_EVENT_RELEASE_TAG")
 
 java {
     sourceCompatibility(JavaVersion.VERSION_1_8)
@@ -15,6 +15,6 @@ repositories {
 }
 
 dependencies {
-    implementation "io.netty:netty-all:4.1.10.Final"
+    implementation "io.netty:netty-all:4.2.10.Final"
     implementation "it.unimi.dsi:fastutil:8.5.18"
 }

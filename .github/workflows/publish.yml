@@ -1,0 +1,89 @@
+name: Java CI
+
+on:
+  release:
+    types:
+      - released
+
+permissions:                    # Global permissions configuration starts here
+  contents: write
+  pull-requests: write
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+
+      - name: Extract latest commit message and hash
+        run: |
+          GIT_MESSAGE=$(git log -1 --pretty=format:"%s")
+          GIT_HASH=$(git log --pretty=format:'%h' -n 1)
+          echo "GIT_MESSAGE=$GIT_MESSAGE" >> $GITHUB_ENV
+          echo "GIT_HASH=$GIT_HASH" >> $GITHUB_ENV
+
+      - name: Install xmlstarlet
+        run: sudo apt-get install -y xmlstarlet
+
+      - name: Build with Gradle
+        env:
+          GITHUB_EVENT_RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          bash ./gradlew build
+          bash ./gradlew publishToMavenLocal
+
+      - name: Extract artifactId, groupId, version from generated POM file
+        id: extract_version
+        run: |
+          xml_file=$(find ~/.m2/repository -type f -name "*.pom" -print -quit)
+          VERSION=$(xmlstarlet sel -N xmlns="http://maven.apache.org/POM/4.0.0" -t -v "//xmlns:project/xmlns:version" "$xml_file")
+          GROUPID=$(xmlstarlet sel -N xmlns="http://maven.apache.org/POM/4.0.0" -t -v "//xmlns:project/xmlns:groupId" "$xml_file" | sed 's/\./\//g')
+          ARTIFACTID=$(xmlstarlet sel -N xmlns="http://maven.apache.org/POM/4.0.0" -t -v "//xmlns:project/xmlns:artifactId" "$xml_file")       
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "GROUPID=$GROUPID" >> $GITHUB_ENV
+          echo "ARTIFACTID=$ARTIFACTID" >> $GITHUB_ENV
+
+      - name: Checkout artifact repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'Mr-Zombii/git-maven'
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.MAVEN_PAT }}
+
+      - name: Create package directories
+        run: |
+          mkdir -p ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/${{ env.VERSION }}
+
+      - name: Copy JAR, POM, SHA-1, and MD5 files
+        run: |
+          FIRST_TERM=$(echo "${{ env.GROUPID }}" | cut -d'/' -f1)
+          cp -r ~/.m2/repository/$FIRST_TERM .
+          mv ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/maven-metadata-local.xml ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/maven-metadata.xml
+          sha1sum ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/${{ env.VERSION }}/${{ env.ARTIFACTID }}-${{ env.VERSION }}.jar > ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/${{ env.VERSION }}/${{ env.ARTIFACTID }}-${{ env.VERSION }}.jar.sha1
+          md5sum ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/${{ env.VERSION }}/${{ env.ARTIFACTID }}-${{ env.VERSION }}.jar > ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/${{ env.VERSION }}/${{ env.ARTIFACTID }}-${{ env.VERSION }}.jar.md5
+          sha1sum ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/${{ env.VERSION }}/${{ env.ARTIFACTID }}-${{ env.VERSION }}.pom > ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/${{ env.VERSION }}/${{ env.ARTIFACTID }}-${{ env.VERSION }}.pom.sha1
+          md5sum ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/${{ env.VERSION }}/${{ env.ARTIFACTID }}-${{ env.VERSION }}.pom > ${{ env.GROUPID }}/${{ env.ARTIFACTID }}/${{ env.VERSION }}/${{ env.ARTIFACTID }}-${{ env.VERSION }}.pom.md5
+
+      - name: Commit and push files
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git add .
+          git commit -m "${{ env.GIT_MESSAGE }} https://github.com/${{ github.event.repository.full_name }}/commit/${{ env.GIT_HASH }}. Version: ${{ env.VERSION }}"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.MAVEN_PAT }}
+          repository: vikulin/artifact
+          force_with_lease: true
