@@ -1,7 +1,5 @@
 package displayserver;
 
-import com.sun.imageio.plugins.jpeg.JPEGImageWriter;
-import com.sun.imageio.plugins.jpeg.JPEGImageWriterSpi;
 import displayserver.packet.ScreenPacket;
 import me.zombii.qnet.api.ITCPClient;
 import me.zombii.qnet.api.connections.IConnection;
@@ -22,7 +20,6 @@ public class DisplayClient {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(800, 600);
             frame.setLocationRelativeTo(null);
-//            frame.setResizable(false);
 
             frame.setVisible(true);
         });
@@ -34,7 +31,6 @@ public class DisplayClient {
         IPacketProtocol protocol = IPacketProtocol.makeDefault();
         protocol.registerPacket(ScreenPacket.class);
 
-        new JPEGImageWriter(new JPEGImageWriterSpi());
         protocol.registerHandler(Side.CLIENT, ScreenPacket.class, new IPacketHandler<ScreenPacket>() {
             @Override
             public void handle(Side side, IConnection connection, IPacketProtocol protocol, ScreenPacket packet) throws IOException {
