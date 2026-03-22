@@ -112,11 +112,11 @@ public class JavaNetTCPServer implements ITCPServer {
                             e.printStackTrace();
 
                             IJavaNetConnection connection = connections.get(i).asJavaNetConnection();
-                            connections.remove(connection);
                             connectionMap.remove(connections.get(i).asJavaNetConnection().getSocket().getLocalSocketAddress());
                             try {
                                 connections.get(i).asJavaNetConnection().getSocket().close();
                             } catch (IOException ignore) {}
+                            connections.remove(connection);
                             i--;
                         }
                     }
