@@ -45,7 +45,6 @@ public class NettyTCPServer implements ITCPServer {
     }
 
     public NettyTCPServer(Consumer<IConnection> onConnectionAccepted, Consumer<IConnection> onConnectionClosed) {
-
         this.onConnectionAccepted = onConnectionAccepted;
         this.onConnectionClosed = onConnectionClosed;
 
@@ -114,6 +113,7 @@ public class NettyTCPServer implements ITCPServer {
 
         try {
             channel = bootstrap.bind(address).syncUninterruptibly().channel();
+            running.set(true);
             channel.closeFuture().sync();
         } catch (InterruptedException e) {
             // we are closing the thread now!
