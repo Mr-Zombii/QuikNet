@@ -132,6 +132,7 @@ public class NettyTCPClient implements ITCPClient, INettyConnection {
             // we are closing the thread now!
         } finally {
             eventLoopGroup.shutdownGracefully();
+            disconnect();
         }
     }
 
@@ -141,7 +142,7 @@ public class NettyTCPClient implements ITCPClient, INettyConnection {
 
     public void disconnect() {
         if (!this.connected.get())
-            throw new IllegalStateException("Cannot disconnect client twice!");
+            return;
 
         this.connected.set(false);
         this.onConnectionClosed.accept(this);

@@ -169,7 +169,6 @@ public class JavaNetTCPServer implements ITCPServer {
         try {
             connectionToDisconnect.getSocket().close();
         } catch (IOException ignore) {}
-        onConnectionClosed.accept(connection);
     }
 
 

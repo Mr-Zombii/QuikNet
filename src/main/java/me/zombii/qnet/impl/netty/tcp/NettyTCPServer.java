@@ -130,7 +130,7 @@ public class NettyTCPServer implements ITCPServer {
     }
 
     public void disconnect(IConnection connection) {
-        if (connection.isUsingNetty())
+        if (connection.isUsingJavaNet())
             throw new IllegalStateException("Cannot disconnect a javanet-connection from a netty server");
 
         INettyConnection iNettyConnection = connection.asNettyConnection();

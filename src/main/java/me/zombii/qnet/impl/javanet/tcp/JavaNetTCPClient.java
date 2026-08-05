@@ -158,6 +158,7 @@ public class JavaNetTCPClient implements ITCPClient, IJavaNetConnection {
                         packetDeserializer.close();
                     }
                 }
+                disconnect();
             } catch (DataFormatException e) {
                 e.printStackTrace();
             }
@@ -170,7 +171,7 @@ public class JavaNetTCPClient implements ITCPClient, IJavaNetConnection {
 
     public void disconnect() {
         if (!this.connected.get())
-            throw new IllegalStateException("Cannot disconnect client twice!");
+            return;
 
         this.connected.set(false);
         this.onConnectionClosed.accept(this);

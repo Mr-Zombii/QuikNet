@@ -68,6 +68,7 @@ public class JavaNetTCPServerConnection implements IJavaNetConnection {
                 e.printStackTrace();
             }
         }
+        disconnect();
     }
 
     @Override
